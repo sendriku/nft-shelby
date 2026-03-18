@@ -9,7 +9,7 @@
 
 ---
 
-## 🏗 Tech Stack
+## Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
@@ -26,7 +26,7 @@
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 nft-shelby/
@@ -66,7 +66,7 @@ nft-shelby/
 
 ---
 
-## 🚀 Setup
+## Setup
 
 ### 1. Clone & Install
 
@@ -95,7 +95,7 @@ npm run dev
 
 ---
 
-## 🔄 Upload Flow (3 Steps)
+## Upload Flow (3 Steps)
 
 The upload process follows the official Shelby Protocol specification:
 
@@ -133,7 +133,7 @@ File Selected
 
 ---
 
-## 🌐 Network Reference
+## Network Reference
 
 | Component | URL |
 |-----------|-----|
@@ -144,14 +144,14 @@ File Selected
 
 ---
 
-## 💰 Requirements
+## Requirements
 
 - **APT tokens** — for Aptos gas fees ([Faucet](https://aptos.dev/network/faucet))
 - **ShelbyUSD** — 1 ShelbyUSD per upload ([Discord](https://discord.gg/shelbyprotocol))
 
 ---
 
-## 🎨 Design System
+## Design System
 
 Custom dark aesthetic built with:
 - **Colors**: `void` → `obsidian` → `carbon` → `slate` depth scale
@@ -161,7 +161,7 @@ Custom dark aesthetic built with:
 
 ---
 
-## 📦 Key Commands
+## Key Commands
 
 ```bash
 npm run dev          # Development server
