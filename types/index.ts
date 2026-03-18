@@ -36,7 +36,6 @@ export interface NFTItem {
   ownerAddress: string;
 }
 
-// Used by UploadSuccess and Gallery
 export interface UploadedNFT {
   id: string;
   fileName: string;
@@ -44,7 +43,9 @@ export interface UploadedNFT {
   shelbyUrl: string;
   txHash?: string;
   expiresAt: Date;
-  mimeType?: string;
+  mimeType: string;
+  uploadedAt: Date;
+  ownerAddress: string;
 }
 
 export interface UploadProgress {
