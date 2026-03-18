@@ -3,153 +3,229 @@
 import { CheckCircle2, ExternalLink, Copy, RotateCcw, Check } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { getExplorerTxUrl } from "@/lib/aptos";
+import { getExplorerTxUrl, getExplorerAccountUrl } from "@/lib/aptos";
 import { formatFileSize } from "@/types";
 import { toast } from "sonner";
 import type { UploadedNFT } from "@/types";
 
 interface UploadSuccessProps {
   nft: UploadedNFT;
-  onUploadAnother: () => void;
+  onReset: () => void;
 }
 
-export function UploadSuccess({ nft, onUploadAnother }: UploadSuccessProps) {
-  const [copiedUrl, setCopiedUrl] = useState(false);
-  const [copiedHash, setCopiedHash] = useState(false);
+export function UploadSuccess({ nft, onReset }: UploadSuccessProps) {
+  const [copiedTx, setCopiedTx] = useState(false);
+  const [copiedIpfs, setCopiedIpfs] = useState(false);
 
-  async function copyToClipboard(text: string, type: "url" | "hash") {
-    await navigator.clipboard.writeText(text);
-    if (type === "url") {
-      setCopiedUrl(true);
-      toast.success("Shelby URL copied");
-      setTimeout(() => setCopiedUrl(false), 2000);
-    } else {
-      setCopiedHash(true);
-      toast.success("TX hash copied");
-      setTimeout(() => setCopiedHash(false), 2000);
-    }
-  }
+  const handleCopyTx = async () => {
+    if (!nft.txHash) return;
+    await navigator.clipboard.writeText(nft.txHash);
+    setCopiedTx(true);
+    toast.success("Transaction hash copied!");
+    setTimeout(() => setCopiedTx(false), 2000);
+  };
+
+  const handleCopyIpfs = async () => {
+    if (!nft.ipfsHash) return;
+    await navigator.clipboard.writeText(nft.ipfsHash);
+    setCopiedIpfs(true);
+    toast.success("IPFS hash copied!");
+    setTimeout(() => setCopiedIpfs(false), 2000);
+  };
+
+  const isImage = nft.mimeType?.startsWith("image/");
+  const isVideo = nft.mimeType?.startsWith("video/");
+  const isAudio = nft.mimeType?.startsWith("audio/");
 
   return (
-    <div className="animate-slide-up space-y-6">
-      {/* Success header */}
-      <div className="text-center space-y-3">
-        <div className="relative inline-flex">
-          <div className="absolute inset-0 rounded-full bg-frost/20 blur-xl animate-pulse-slow" />
-          <CheckCircle2 className="relative w-16 h-16 text-frost" />
+    <div className="space-y-6">
+      {/* Success Header */}
+      <div className="flex flex-col items-center text-center gap-3 py-4">
+        <div className="relative">
+          <div className="w-20 h-20 rounded-full bg-emerald-500/10 flex items-center justify-center">
+            <CheckCircle2 className="w-10 h-10 text-emerald-400" />
+          </div>
+          <div className="absolute inset-0 rounded-full animate-ping bg-emerald-500/20" />
         </div>
         <div>
-          <h3 className="font-display text-3xl text-frost tracking-wider">
-            STORED ON SHELBY
+          <h3 className="text-xl font-display font-semibold text-frost">
+            NFT Minted Successfully!
           </h3>
-          <p className="text-ash-200 text-sm mt-1">
-            Your NFT media is now decentralized
+          <p className="text-sm text-frost/50 mt-1">
+            Your file has been uploaded to Shelby and minted on Aptos
           </p>
         </div>
       </div>
 
-      {/* File info */}
-      <div className="glass-card rounded-xl p-4 space-y-3">
-        <div className="flex items-center justify-between">
-          <span className="text-xs uppercase tracking-widest text-ash-200 font-mono">
-            File
-          </span>
-          <span className="text-sm text-ash-100 font-medium truncate ml-4 max-w-[200px]">
-            {nft.fileName}
-          </span>
+      {/* Preview */}
+      {nft.previewUrl && (
+        <div className="glass-card rounded-xl overflow-hidden aspect-video flex items-center justify-center bg-void/50">
+          {isImage && (
+            <img
+              src={nft.previewUrl}
+              alt={nft.name}
+              className="max-h-full max-w-full object-contain"
+            />
+          )}
+          {isVideo && (
+            <video
+              src={nft.previewUrl}
+              controls
+              className="max-h-full max-w-full"
+            />
+          )}
+          {isAudio && (
+            <div className="flex flex-col items-center gap-4 p-6">
+              <div className="w-16 h-16 rounded-full bg-violet-500/20 flex items-center justify-center">
+                <span className="text-3xl">🎵</span>
+              </div>
+              <audio src={nft.previewUrl} controls className="w-full" />
+            </div>
+          )}
         </div>
-        <div className="frost-line" />
-        <div className="flex items-center justify-between">
-          <span className="text-xs uppercase tracking-widest text-ash-200 font-mono">
-            Size
-          </span>
-          <span className="text-sm font-mono text-ash-100">
-            {formatFileSize(nft.fileSize)}
-          </span>
-        </div>
-        <div className="frost-line" />
-        <div className="flex items-center justify-between">
-          <span className="text-xs uppercase tracking-widest text-ash-200 font-mono">
-            Expires
-          </span>
-          <span className="text-sm font-mono text-ash-100">
-            {nft.expiresAt.toLocaleDateString("en-US", {
-              year: "numeric",
-              month: "short",
-              day: "numeric",
-            })}
-          </span>
-        </div>
+      )}
+
+      {/* NFT Details */}
+      <div className="glass-card rounded-xl divide-y divide-slate/30">
+        <DetailRow label="Name" value={nft.name} />
+        {nft.description && (
+          <DetailRow label="Description" value={nft.description} />
+        )}
+        <DetailRow
+          label="File Type"
+          value={nft.fileType ?? nft.mimeType ?? "Unknown"}
+        />
+        {nft.fileSize !== undefined && (
+          <DetailRow label="File Size" value={formatFileSize(nft.fileSize)} />
+        )}
+        {nft.tokenId && (
+          <DetailRow label="Token ID" value={`#${nft.tokenId}`} />
+        )}
+        {nft.accountAddress && (
+          <DetailRow
+            label="Owner"
+            value={`${nft.accountAddress.slice(0, 8)}...${nft.accountAddress.slice(-6)}`}
+            href={getExplorerAccountUrl(nft.accountAddress)}
+          />
+        )}
       </div>
 
-      {/* Shelby URL */}
-      <div className="space-y-2">
-        <p className="text-xs uppercase tracking-widest text-ash-200 font-mono">
-          Shelby Storage URL
-        </p>
-        <div className="flex items-center gap-2 p-3 bg-carbon rounded-lg border border-[rgba(77,240,255,0.1)]">
-          <code className="text-xs text-frost flex-1 truncate">
-            {nft.shelbyUrl}
-          </code>
-          <button
-            onClick={() => copyToClipboard(nft.shelbyUrl, "url")}
-            className="shrink-0 p-1.5 rounded hover:bg-[rgba(77,240,255,0.1)] transition-colors"
-          >
-            {copiedUrl ? (
-              <Check className="w-3.5 h-3.5 text-frost" />
-            ) : (
-              <Copy className="w-3.5 h-3.5 text-ash-200" />
-            )}
-          </button>
-        </div>
-      </div>
-
-      {/* TX Hash */}
-      {nft.txHash && (
-        <div className="space-y-2">
-          <p className="text-xs uppercase tracking-widest text-ash-200 font-mono">
-            Aptos Transaction
-          </p>
-          <div className="flex items-center gap-2 p-3 bg-carbon rounded-lg border border-[rgba(77,240,255,0.1)]">
-            <code className="text-xs text-ash-200 flex-1 truncate font-mono">
-              {nft.txHash.slice(0, 20)}...{nft.txHash.slice(-8)}
-            </code>
-            <div className="flex items-center gap-1 shrink-0">
+      {/* Transaction & IPFS */}
+      <div className="space-y-3">
+        {nft.txHash && (
+          <div className="glass-card rounded-xl p-4 flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-xs text-frost/40 mb-1">Transaction Hash</p>
+              <p className="text-sm text-frost/80 font-mono truncate">
+                {nft.txHash}
+              </p>
+            </div>
+            <div className="flex gap-2 flex-shrink-0">
               <button
-                onClick={() => copyToClipboard(nft.txHash!, "hash")}
-                className="p-1.5 rounded hover:bg-[rgba(77,240,255,0.1)] transition-colors"
+                onClick={handleCopyTx}
+                className={cn(
+                  "p-2 rounded-lg transition-colors",
+                  copiedTx
+                    ? "bg-emerald-500/20 text-emerald-400"
+                    : "hover:bg-slate/30 text-frost/50 hover:text-frost"
+                )}
               >
-                {copiedHash ? (
-                  <Check className="w-3.5 h-3.5 text-frost" />
+                {copiedTx ? (
+                  <Check className="w-4 h-4" />
                 ) : (
-                  <Copy className="w-3.5 h-3.5 text-ash-200" />
+                  <Copy className="w-4 h-4" />
                 )}
               </button>
               <a
                 href={getExplorerTxUrl(nft.txHash)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-1.5 rounded hover:bg-[rgba(77,240,255,0.1)] transition-colors"
+                className="p-2 rounded-lg hover:bg-slate/30 text-frost/50 hover:text-frost transition-colors"
               >
-                <ExternalLink className="w-3.5 h-3.5 text-ash-200" />
+                <ExternalLink className="w-4 h-4" />
               </a>
             </div>
           </div>
-        </div>
-      )}
-
-      {/* Action button */}
-      <button
-        onClick={onUploadAnother}
-        className={cn(
-          "w-full flex items-center justify-center gap-2 py-3 rounded-lg",
-          "border border-[rgba(77,240,255,0.2)] text-frost text-sm font-semibold",
-          "hover:bg-[rgba(77,240,255,0.05)] hover:border-[rgba(77,240,255,0.4)] transition-all"
         )}
+
+        {nft.ipfsHash && (
+          <div className="glass-card rounded-xl p-4 flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-xs text-frost/40 mb-1">IPFS Hash</p>
+              <p className="text-sm text-frost/80 font-mono truncate">
+                {nft.ipfsHash}
+              </p>
+            </div>
+            <div className="flex gap-2 flex-shrink-0">
+              <button
+                onClick={handleCopyIpfs}
+                className={cn(
+                  "p-2 rounded-lg transition-colors",
+                  copiedIpfs
+                    ? "bg-emerald-500/20 text-emerald-400"
+                    : "hover:bg-slate/30 text-frost/50 hover:text-frost"
+                )}
+              >
+                {copiedIpfs ? (
+                  <Check className="w-4 h-4" />
+                ) : (
+                  <Copy className="w-4 h-4" />
+                )}
+              </button>
+              {nft.shelbyUrl && (
+                <a
+                  href={nft.shelbyUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 rounded-lg hover:bg-slate/30 text-frost/50 hover:text-frost transition-colors"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                </a>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Reset Button */}
+      <button
+        onClick={onReset}
+        className="w-full flex items-center justify-center gap-2 py-3 px-6 rounded-xl border border-slate/30 hover:border-violet-500/50 hover:bg-violet-500/5 text-frost/60 hover:text-frost transition-all"
       >
         <RotateCcw className="w-4 h-4" />
-        Upload Another
+        <span>Mint Another NFT</span>
       </button>
+    </div>
+  );
+}
+
+function DetailRow({
+  label,
+  value,
+  href,
+}: {
+  label: string;
+  value: string;
+  href?: string;
+}) {
+  return (
+    <div className="flex items-center justify-between px-4 py-3 gap-4">
+      <span className="text-sm text-frost/40 flex-shrink-0">{label}</span>
+      {href ? (
+        <a
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-sm text-violet-400 hover:text-violet-300 font-mono truncate flex items-center gap-1"
+        >
+          {value}
+          <ExternalLink className="w-3 h-3 flex-shrink-0" />
+        </a>
+      ) : (
+        <span className="text-sm text-frost/80 truncate text-right">
+          {value}
+        </span>
+      )}
     </div>
   );
 }
