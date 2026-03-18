@@ -13,12 +13,8 @@ import {
   HardDrive,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getExplorerTxUrl } from "@/lib/aptos";
-import {
-  formatFileSize,
-  getMediaCategory,
-  truncateAddress,
-} from "@/types";
+import { getExplorerTxUrl, truncateAddress } from "@/lib/aptos";
+import { formatFileSize, getMediaCategory } from "@/types";
 import type { UploadedNFT } from "@/types";
 import { toast } from "sonner";
 
@@ -30,7 +26,7 @@ interface NFTCardProps {
 export function NFTCard({ nft, onDelete }: NFTCardProps) {
   const [copiedUrl, setCopiedUrl] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const category = getMediaCategory(nft.fileType);
+  const category = getMediaCategory(nft.mimeType);
 
   const isExpired = new Date() > nft.expiresAt;
   const daysLeft = Math.max(
@@ -56,11 +52,7 @@ export function NFTCard({ nft, onDelete }: NFTCardProps) {
   }
 
   const MediaIcon =
-    category === "image"
-      ? ImageIcon
-      : category === "video"
-      ? Video
-      : Music;
+    category === "image" ? ImageIcon : category === "video" ? Video : Music;
 
   return (
     <div
@@ -72,21 +64,12 @@ export function NFTCard({ nft, onDelete }: NFTCardProps) {
     >
       {/* Media preview */}
       <div className="relative h-44 bg-gradient-to-br from-slate to-carbon overflow-hidden">
-        {nft.previewUrl && category === "image" ? (
-          <img
-            src={nft.previewUrl}
-            alt={nft.fileName}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <div className="w-16 h-16 rounded-2xl bg-frost/10 border border-frost/20 flex items-center justify-center">
-              <MediaIcon className="w-7 h-7 text-frost/60" />
-            </div>
+        <div className="w-full h-full flex items-center justify-center">
+          <div className="w-16 h-16 rounded-2xl bg-frost/10 border border-frost/20 flex items-center justify-center">
+            <MediaIcon className="w-7 h-7 text-frost/60" />
           </div>
-        )}
+        </div>
 
-        {/* Overlay gradient */}
         <div className="absolute inset-0 bg-gradient-to-t from-carbon/80 via-transparent to-transparent" />
 
         {/* Category badge */}
@@ -121,13 +104,12 @@ export function NFTCard({ nft, onDelete }: NFTCardProps) {
 
       {/* Card body */}
       <div className="p-4 space-y-3">
-        {/* File name */}
         <div>
           <p className="text-sm font-semibold text-ash-100 truncate" title={nft.fileName}>
             {nft.fileName}
           </p>
           <p className="text-xs text-ash-300 font-mono mt-0.5">
-            {truncateAddress(nft.accountAddress, 8)}
+            {truncateAddress(nft.ownerAddress, 8)}
           </p>
         </div>
 
