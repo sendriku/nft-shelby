@@ -36,12 +36,15 @@ export interface NFTItem {
   ownerAddress: string;
 }
 
+// Used by UploadSuccess and Gallery
 export interface UploadedNFT {
+  id: string;
   fileName: string;
   fileSize: number;
   shelbyUrl: string;
   txHash?: string;
   expiresAt: Date;
+  mimeType?: string;
 }
 
 export interface UploadProgress {
@@ -64,9 +67,9 @@ export const UPLOAD_STEPS: UploadStep[] = [
   { id: "uploading", label: "Upload", desc: "Storing to Shelby RPC" },
 ];
 
-export function truncateAddress(address: string): string {
+export function truncateAddress(address: string, chars = 6): string {
   if (!address) return "";
-  return `${address.slice(0, 6)}...${address.slice(-4)}`;
+  return `${address.slice(0, chars)}...${address.slice(-4)}`;
 }
 
 export function formatFileSize(bytes: number): string {
