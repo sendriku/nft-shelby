@@ -1,8 +1,8 @@
 "use client";
 
 import { Network } from "@aptos-labs/ts-sdk";
+import { UploadProgress } from "@/types";
 
-// Helper to get Shelby SDK dynamically (browser-only)
 async function getShelbySDK() {
   const [
     { ShelbyClient },
@@ -25,20 +25,13 @@ export interface UploadResult {
   expiresAt: number;
 }
 
-export interface UploadProgress {
-  step: "encoding" | "registering" | "uploading" | "done";
-  message: string;
-}
-
-type ProgressCallback = (progress: UploadProgress) => void;
-
 type SignAndSubmitFn = (payload: { data: unknown }) => Promise<{ hash: string }>;
 
 export async function uploadToShelby(
   file: File,
   accountAddress: string,
   signAndSubmitTransaction: SignAndSubmitFn,
-  onProgress: ProgressCallback
+  onProgress: (progress: UploadProgress) => void
 ): Promise<UploadResult> {
   const {
     ShelbyClient,
@@ -48,7 +41,6 @@ export async function uploadToShelby(
     expectedTotalChunksets,
   } = await getShelbySDK();
 
-  // Import AccountAddress from ts-sdk to convert string → AccountAddress object
   const { AccountAddress } = await import("@aptos-labs/ts-sdk");
   const accountObj = AccountAddress.from(accountAddress);
 
@@ -60,13 +52,13 @@ export async function uploadToShelby(
   });
 
   // Step 1: Encode
-  onProgress({ step: "encoding", message: "Encoding file with erasure coding..." });
+  onProgress({ step: "encoding", stepIndex: 0, percentage: 10, message: "Encoding file with erasure coding..." });
   const buffer = await file.arrayBuffer();
   const provider = await createDefaultErasureCodingProvider();
   const commitments = await generateCommitments(provider, buffer);
 
   // Step 2: Register on-chain
-  onProgress({ step: "registering", message: "Registering blob on Aptos..." });
+  onProgress({ step: "registering", stepIndex: 1, percentage: 40, message: "Registering blob on Aptos..." });
   const expirationMicros = (Date.now() + 30 * 24 * 60 * 60 * 1000) * 1000;
 
   const payload = ShelbyBlobClient.createRegisterBlobPayload({
@@ -80,21 +72,19 @@ export async function uploadToShelby(
 
   const tx = await signAndSubmitTransaction({ data: payload });
 
-  // Step 3: Upload to Shelby RPC
-  onProgress({ step: "uploading", message: "Uploading to Shelby network..." });
+  // Step 3: Upload
+  onProgress({ step: "uploading", stepIndex: 2, percentage: 70, message: "Uploading to Shelby network..." });
   await shelbyClient.rpc.putBlob({
     account: accountObj,
     blobName: file.name,
     blobData: new Uint8Array(buffer),
   });
 
-  onProgress({ step: "done", message: "Upload complete!" });
-
-  const shelbyUrl = `https://api.testnet.shelby.xyz/shelby/${accountAddress}/${file.name}`;
+  onProgress({ step: "success", stepIndex: 2, percentage: 100, message: "Upload complete!" });
 
   return {
     blobName: file.name,
-    shelbyUrl,
+    shelbyUrl: `https://api.testnet.shelby.xyz/shelby/${accountAddress}/${file.name}`,
     txHash: tx.hash,
     fileSize: file.size,
     mimeType: file.type,
