@@ -47,7 +47,7 @@ export default function GalleryPage() {
   const filtered =
     filter === "all"
       ? nfts
-      : nfts.filter((n) => n.fileType.startsWith(filter));
+      : nfts.filter((n) => (n.mimeType ?? "").startsWith(filter));
 
   return (
     <div className="min-h-screen bg-void bg-grid">
@@ -58,7 +58,6 @@ export default function GalleryPage() {
         <div className="pt-10 pb-8">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div>
-              {/* Glow decoration */}
               <div className="absolute -z-10 w-64 h-24 bg-frost/5 blur-3xl rounded-full -mt-4 -ml-4" />
               <h1 className="font-display text-5xl sm:text-6xl tracking-wider text-ash-100">
                 MY GALLERY
@@ -89,7 +88,7 @@ export default function GalleryPage() {
                 const count =
                   value === "all"
                     ? nfts.length
-                    : nfts.filter((n) => n.fileType.startsWith(value)).length;
+                    : nfts.filter((n) => (n.mimeType ?? "").startsWith(value)).length;
                 return (
                   <button
                     key={value}
@@ -120,13 +119,9 @@ export default function GalleryPage() {
 
         {/* Content states */}
         {!mounted ? (
-          // Loading skeleton
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {[1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className="glass-card rounded-2xl overflow-hidden animate-pulse"
-              >
+              <div key={i} className="glass-card rounded-2xl overflow-hidden animate-pulse">
                 <div className="h-44 bg-slate" />
                 <div className="p-4 space-y-3">
                   <div className="h-4 bg-slate rounded w-3/4" />
@@ -137,7 +132,6 @@ export default function GalleryPage() {
             ))}
           </div>
         ) : !connected ? (
-          // Not connected
           <div className="flex flex-col items-center justify-center py-32 text-center gap-4">
             <div className="w-20 h-20 rounded-2xl bg-frost/5 border border-frost/10 flex items-center justify-center">
               <Wallet className="w-9 h-9 text-ash-300" />
@@ -152,7 +146,6 @@ export default function GalleryPage() {
             </div>
           </div>
         ) : filtered.length === 0 ? (
-          // Empty
           <div className="flex flex-col items-center justify-center py-32 text-center gap-6">
             <div className="relative">
               <div className="absolute inset-0 bg-frost/10 blur-2xl rounded-full" />
@@ -181,7 +174,6 @@ export default function GalleryPage() {
             )}
           </div>
         ) : (
-          // Grid
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {filtered.map((nft) => (
               <NFTCard key={nft.id} nft={nft} onDelete={handleDelete} />
