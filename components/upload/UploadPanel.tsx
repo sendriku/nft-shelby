@@ -52,6 +52,7 @@ export default function UploadPanel() {
       );
 
       const newId = crypto.randomUUID();
+      const now = Date.now();
 
       saveNFT({
         id: newId,
@@ -61,7 +62,7 @@ export default function UploadPanel() {
         fileSize: uploadResult.fileSize,
         mimeType: uploadResult.mimeType,
         expiresAt: uploadResult.expiresAt,
-        uploadedAt: Date.now(),
+        uploadedAt: now,
         ownerAddress: account.address.toString(),
       });
 
@@ -73,6 +74,8 @@ export default function UploadPanel() {
         txHash: uploadResult.txHash,
         expiresAt: new Date(uploadResult.expiresAt / 1000),
         mimeType: uploadResult.mimeType,
+        uploadedAt: new Date(now),
+        ownerAddress: account.address.toString(),
       });
 
       toast.success("Upload successful!");
@@ -122,10 +125,7 @@ export default function UploadPanel() {
         <UploadProgressDisplay progress={progress} />
       ) : (
         <>
-          <FileDropzone
-            onFileSelected={handleFileSelect}
-            disabled={uploading}
-          />
+          <FileDropzone onFileSelected={handleFileSelect} disabled={uploading} />
           {selectedFile && (
             <button
               onClick={handleUpload}
