@@ -28,14 +28,15 @@ export function deleteNFT(id: string): void {
 export function getUploadedNFTs(): UploadedNFT[] {
   return getNFTs().map((item) => ({
     id: item.id,
+    name: item.blobName,
     fileName: item.blobName,
     fileSize: item.fileSize,
+    mimeType: item.mimeType,
     shelbyUrl: item.shelbyUrl,
     txHash: item.txHash,
-    expiresAt: new Date(item.expiresAt / 1000),
-    mimeType: item.mimeType,
-    uploadedAt: new Date(item.uploadedAt),
     ownerAddress: item.ownerAddress,
+    expiresAt: new Date(item.expiresAt / 1000),
+    uploadedAt: new Date(item.uploadedAt),
   }));
 }
 
