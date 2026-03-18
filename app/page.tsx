@@ -8,7 +8,7 @@ import { StatsBar } from "@/components/ui/StatsBar";
 // UploadPanel uses @shelby-protocol/sdk/browser (browser-only WASM).
 // Must be dynamically imported with ssr: false to avoid SSR crash.
 const UploadPanel = dynamic(
-  () => import("@/components/upload/UploadPanel").then((m) => m.UploadPanel),
+  () => import("@/components/upload/UploadPanel"),
   {
     ssr: false,
     loading: () => (
@@ -25,28 +25,23 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-void bg-grid">
       <Navbar />
-
       <main className="max-w-6xl mx-auto px-4 sm:px-6">
         {/* Hero */}
         <HeroSection />
-
         {/* Stats */}
         <StatsBar />
-
         {/* Upload + Info side by side */}
         <div className="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
           {/* Upload panel — client-only, no SSR */}
           <div className="lg:sticky lg:top-24">
             <UploadPanel />
           </div>
-
           {/* How it works */}
           <div>
             <HowItWorks />
           </div>
         </div>
       </main>
-
       <Footer />
     </div>
   );
