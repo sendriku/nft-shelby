@@ -51,8 +51,10 @@ export default function UploadPanel() {
         (p) => setProgress(p)
       );
 
+      const newId = crypto.randomUUID();
+
       saveNFT({
-        id: crypto.randomUUID(),
+        id: newId,
         blobName: uploadResult.blobName,
         shelbyUrl: uploadResult.shelbyUrl,
         txHash: uploadResult.txHash,
@@ -64,11 +66,13 @@ export default function UploadPanel() {
       });
 
       setUploadedNFT({
+        id: newId,
         fileName: selectedFile.name,
         fileSize: uploadResult.fileSize,
         shelbyUrl: uploadResult.shelbyUrl,
         txHash: uploadResult.txHash,
         expiresAt: new Date(uploadResult.expiresAt / 1000),
+        mimeType: uploadResult.mimeType,
       });
 
       toast.success("Upload successful!");
