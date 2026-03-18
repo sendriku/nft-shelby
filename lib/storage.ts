@@ -25,7 +25,6 @@ export function deleteNFT(id: string): void {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
 }
 
-// Gallery uses these aliases
 export function getUploadedNFTs(): UploadedNFT[] {
   return getNFTs().map((item) => ({
     id: item.id,
@@ -35,6 +34,8 @@ export function getUploadedNFTs(): UploadedNFT[] {
     txHash: item.txHash,
     expiresAt: new Date(item.expiresAt / 1000),
     mimeType: item.mimeType,
+    uploadedAt: new Date(item.uploadedAt),
+    ownerAddress: item.ownerAddress,
   }));
 }
 
