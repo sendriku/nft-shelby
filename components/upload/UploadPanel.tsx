@@ -66,16 +66,19 @@ export default function UploadPanel() {
         ownerAddress: account.address.toString(),
       });
 
-      setUploadedNFT({
+     setUploadedNFT({
         id: newId,
+        name: selectedFile.name,
         fileName: selectedFile.name,
         fileSize: uploadResult.fileSize,
+        mimeType: uploadResult.mimeType,
+        fileType: uploadResult.mimeType,
         shelbyUrl: uploadResult.shelbyUrl,
         txHash: uploadResult.txHash,
-        expiresAt: new Date(uploadResult.expiresAt / 1000),
-        mimeType: uploadResult.mimeType,
-        uploadedAt: new Date(now),
+        accountAddress: account.address.toString(),
         ownerAddress: account.address.toString(),
+        expiresAt: new Date(uploadResult.expiresAt / 1000),
+        uploadedAt: new Date(now),
       });
 
       toast.success("Upload successful!");
