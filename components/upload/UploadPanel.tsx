@@ -3,16 +3,18 @@
 import { useState, useCallback } from "react";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { toast } from "sonner";
-import { uploadToShelby, UploadResult, UploadProgress } from "@/lib/shelby";
+import { uploadToShelby, UploadResult } from "@/lib/shelby";
 import { saveNFT } from "@/lib/storage";
-import { ACCEPTED_FILE_TYPES, MAX_FILE_SIZE } from "@/types";
-import FileDropzone from "./FileDropzone";
-import UploadProgressStepper from "./UploadProgress";
-import UploadSuccess from "./UploadSuccess";
+import { ACCEPTED_FILE_TYPES, MAX_FILE_SIZE, UploadedNFT, UploadProgress } from "@/types";
+import { FileDropzone } from "./FileDropzone";
+import { UploadProgressDisplay } from "./UploadProgress";
+import { UploadSuccess } from "./UploadSuccess";
 
 const INITIAL_PROGRESS: UploadProgress = {
   step: "encoding",
+  stepIndex: 0,
   message: "Preparing...",
+  percentage: 0,
 };
 
 export default function UploadPanel() {
@@ -20,11 +22,11 @@ export default function UploadPanel() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState<UploadProgress>(INITIAL_PROGRESS);
-  const [result, setResult] = useState<UploadResult | null>(null);
+  const [uploadedNFT, setUploadedNFT] = useState<UploadedNFT | null>(null);
 
   const handleFileSelect = useCallback((file: File) => {
     if (file.size > MAX_FILE_SIZE) {
-      toast.error("File too large. Maximum size is 50MB.");
+      toast.error("File too large. Maximum size is 100MB.");
       return;
     }
     if (!ACCEPTED_FILE_TYPES.includes(file.type)) {
@@ -32,17 +34,17 @@ export default function UploadPanel() {
       return;
     }
     setSelectedFile(file);
-    setResult(null);
+    setUploadedNFT(null);
   }, []);
 
   const handleUpload = async () => {
     if (!selectedFile || !account || !connected) return;
 
     setUploading(true);
-    setProgress({ ...INITIAL_PROGRESS, step: "encoding" });
+    setProgress(INITIAL_PROGRESS);
 
     try {
-      const uploadResult = await uploadToShelby(
+      const uploadResult: UploadResult = await uploadToShelby(
         selectedFile,
         account.address.toString(),
         signAndSubmitTransaction as never,
@@ -61,10 +63,18 @@ export default function UploadPanel() {
         ownerAddress: account.address.toString(),
       });
 
-      setResult(uploadResult);
+      setUploadedNFT({
+        fileName: selectedFile.name,
+        fileSize: uploadResult.fileSize,
+        shelbyUrl: uploadResult.shelbyUrl,
+        txHash: uploadResult.txHash,
+        expiresAt: new Date(uploadResult.expiresAt / 1000),
+      });
+
       toast.success("Upload successful!");
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Upload failed";
+      setProgress((p) => ({ ...p, step: "error", error: message }));
       toast.error(message);
     } finally {
       setUploading(false);
@@ -73,7 +83,7 @@ export default function UploadPanel() {
 
   const handleReset = () => {
     setSelectedFile(null);
-    setResult(null);
+    setUploadedNFT(null);
     setProgress(INITIAL_PROGRESS);
   };
 
@@ -89,8 +99,8 @@ export default function UploadPanel() {
     );
   }
 
-  if (result) {
-    return <UploadSuccess result={result} onReset={handleReset} />;
+  if (uploadedNFT) {
+    return <UploadSuccess nft={uploadedNFT} onUploadAnother={handleReset} />;
   }
 
   return (
@@ -105,14 +115,13 @@ export default function UploadPanel() {
       <div className="h-px bg-border" />
 
       {uploading ? (
-        <UploadProgressStepper progress={progress} />
+        <UploadProgressDisplay progress={progress} />
       ) : (
         <>
           <FileDropzone
-            onFileSelect={handleFileSelect}
-            selectedFile={selectedFile}
+            onFileSelected={handleFileSelect}
+            disabled={uploading}
           />
-
           {selectedFile && (
             <button
               onClick={handleUpload}
