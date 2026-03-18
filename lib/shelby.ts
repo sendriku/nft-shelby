@@ -61,13 +61,14 @@ export async function uploadToShelby(
   onProgress({ step: "registering", stepIndex: 1, percentage: 40, message: "Registering blob on Aptos..." });
   const expirationMicros = (Date.now() + 30 * 24 * 60 * 60 * 1000) * 1000;
 
-  const payload = ShelbyBlobClient.createRegisterBlobPayload({
+ const payload = ShelbyBlobClient.createRegisterBlobPayload({
     account: accountObj,
     blobName: file.name,
     blobMerkleRoot: commitments.blob_merkle_root,
     numChunksets: expectedTotalChunksets(commitments.raw_data_size),
     expirationMicros,
     blobSize: commitments.raw_data_size,
+    encoding: commitments.encoding,
   });
 
   const tx = await signAndSubmitTransaction({ data: payload });
