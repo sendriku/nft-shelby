@@ -1,5 +1,4 @@
 "use client";
-
 import { Network } from "@aptos-labs/ts-sdk";
 import { UploadProgress } from "@/types";
 
@@ -45,7 +44,6 @@ export async function uploadToShelby(
   const accountObj = AccountAddress.from(accountAddress);
 
   const apiKey = process.env.NEXT_PUBLIC_SHELBY_API_KEY || "";
-
   const shelbyClient = new ShelbyClient({
     network: Network.TESTNET,
     apiKey,
@@ -61,14 +59,14 @@ export async function uploadToShelby(
   onProgress({ step: "registering", stepIndex: 1, percentage: 40, message: "Registering blob on Aptos..." });
   const expirationMicros = (Date.now() + 30 * 24 * 60 * 60 * 1000) * 1000;
 
- const payload = ShelbyBlobClient.createRegisterBlobPayload({
+  const payload = ShelbyBlobClient.createRegisterBlobPayload({
     account: accountObj,
     blobName: file.name,
     blobMerkleRoot: commitments.blob_merkle_root,
     numChunksets: expectedTotalChunksets(commitments.raw_data_size),
     expirationMicros,
     blobSize: commitments.raw_data_size,
-    encoding: commitments.encoding,
+    encoding: 0,
   });
 
   const tx = await signAndSubmitTransaction({ data: payload });
