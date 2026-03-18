@@ -10,10 +10,10 @@ import type { UploadedNFT } from "@/types";
 
 interface UploadSuccessProps {
   nft: UploadedNFT;
-  onReset: () => void;
+  onUploadAnother: () => void;
 }
 
-export function UploadSuccess({ nft, onReset }: UploadSuccessProps) {
+export function UploadSuccess({ nft, onUploadAnother }: UploadSuccessProps) {
   const [copiedTx, setCopiedTx] = useState(false);
   const [copiedIpfs, setCopiedIpfs] = useState(false);
 
@@ -189,7 +189,7 @@ export function UploadSuccess({ nft, onReset }: UploadSuccessProps) {
 
       {/* Reset Button */}
       <button
-        onClick={onReset}
+        onClick={onUploadAnother}
         className="w-full flex items-center justify-center gap-2 py-3 px-6 rounded-xl border border-slate/30 hover:border-violet-500/50 hover:bg-violet-500/5 text-frost/60 hover:text-frost transition-all"
       >
         <RotateCcw className="w-4 h-4" />
