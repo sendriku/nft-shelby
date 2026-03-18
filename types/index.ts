@@ -10,9 +10,7 @@ export const ACCEPTED_FILE_TYPES = [
   "audio/ogg",
   "audio/flac",
 ];
-
 export const ALL_SUPPORTED_TYPES = ACCEPTED_FILE_TYPES;
-
 export const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
 
 export type MediaCategory = "image" | "video" | "audio" | "other";
@@ -38,14 +36,25 @@ export interface NFTItem {
 
 export interface UploadedNFT {
   id: string;
+  // display fields
+  name: string;
+  description?: string;
   fileName: string;
   fileSize: number;
-  shelbyUrl: string;
-  txHash?: string;
-  expiresAt: Date;
+  fileType?: string;
   mimeType: string;
-  uploadedAt: Date;
+  previewUrl?: string;
+  // storage / chain
+  shelbyUrl: string;
+  ipfsHash?: string;
+  txHash?: string;
+  tokenId?: string;
+  // ownership
+  accountAddress?: string;
   ownerAddress: string;
+  // time
+  expiresAt: Date;
+  uploadedAt: Date;
 }
 
 export interface UploadProgress {
