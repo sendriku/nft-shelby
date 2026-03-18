@@ -53,7 +53,7 @@ export async function uploadToShelby(
 
   // Step 1: Encode
   onProgress({ step: "encoding", stepIndex: 0, percentage: 10, message: "Encoding file with erasure coding..." });
-  const buffer = await file.arrayBuffer();
+  const buffer = new Uint8Array(await file.arrayBuffer());
   const provider = await createDefaultErasureCodingProvider();
   const commitments = await generateCommitments(provider, buffer);
 
